@@ -32,7 +32,7 @@ db_config = {
     'password': 'PAiac14-',
     'port': 5551 
 }
-engine = create_engine(f'postgresql+psycopg2://{db_config["user"]}:{db_config["password"]}@{db_config["host"]}:{db_config["port"]}/{db_config["dbname"]}')
+engine = create_engine(os.getenv('POSTGRES_URL'))
 
 app = Flask(__name__)
 CORS(app)
