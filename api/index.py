@@ -15,7 +15,6 @@ import random
 import hashlib
 import binascii
 from dotenv import load_dotenv
-from apscheduler.schedulers.background import BackgroundScheduler
 
 load_dotenv()
 
@@ -44,7 +43,7 @@ if not os.path.exists(folderPath):
     
 @app.route('/stored-data', methods=['POST'])
 def stored_data():
-    scheduleDeviceBatteryChecks()
+    deviceBatteries()
     dataString = request.data.decode()
     dataArray = dataString.split(',')
     
@@ -618,9 +617,3 @@ def deviceBatteries():
     
     except Exception as e: 
         print(f"Error getting batteries: {str(e)}")
-
-def scheduleDeviceBatteryChecks():
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(deviceBatteries, 'interval', minutes=1) 
-    scheduler.start()
-
