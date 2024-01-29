@@ -9,7 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import text
 from flask import Flask, jsonify
 from flask_cors import CORS
-from flask import send_file
+from flask import send_file, Response
 from flask import request
 import smtplib
 import random
@@ -92,41 +92,35 @@ def stored_data():
 def get_sessions():
     
     try:
-        session_details = []  # Initialize the list to hold session details
+        session_details = [] 
         with engine.connect() as connection:
-            # Fetch unique patient IDs and names
             selectUniqueIDsQuery = text('''
                 SELECT ptid, MIN(ptname) AS ptname
                 FROM psyche_patientdata
                 GROUP BY ptid;
             ''')
-            unique_patients = connection.execute(selectUniqueIDsQuery).fetchall()
+            selecteUniquePatientIDsResult = connection.execute(selectUniqueIDsQuery).fetchall()
 
-            for ptid, ptname in unique_patients:
-                # Fetch data for this patient ID
+            for ptid, ptname in selecteUniquePatientIDsResult:
                 patientDataQuery = text('''
                     SELECT * FROM psyche_patientdata WHERE ptid = :ptid
                 ''')
-                patient_data = connection.execute(patientDataQuery, {'ptid': ptid}).fetchall()
+                patientDataResult = connection.execute(patientDataQuery, {'ptid': ptid}).fetchall()
 
-                # Simulate CSV writing to a string buffer instead of a file
                 output = StringIO()
                 writer = csv.writer(output)
-                # Assuming you know the column headers or retrieve them dynamically
-                writer.writerow([column for column in patient_data[0].keys()])  # Write headers
-                for row in patient_data:
+                writer.writerow([column for column in patientDataResult[0].keys()]) 
+                for row in patientDataResult:
                     writer.writerow([value for value in row])
 
-                # Calculate the byte size of the CSV string
                 csv_content = output.getvalue()
-                size_bytes = int(len(csv_content.encode('utf-8')))  # Get size in bytes
+                size_bytes = int(len(csv_content.encode('utf-8'))) 
 
                 session_details.append({
                     "name": f'{ptname}-{ptid}_RTData',
                     "sizeBytes": size_bytes,
                 })
-
-                # Don't forget to close the StringIO object after use
+                
                 output.close()
 
         return jsonify({"sessions": session_details}), 200
@@ -137,20 +131,40 @@ def get_sessions():
 @app.route('/export-sessions', methods=['POST'])
 def export_sessions():
     data = request.json
-    fileName = data.get('fileName')
-    
-    folderPath = '/tmp/CurrentPatientCSVs'
-    
+    fileName = data.get('fileName', '')
+    ptID = fileName.split('-')[1].split('_')[0]
+
     try:
-        filePath = os.path.join(folderPath, fileName)
-        if os.path.isfile(filePath):
-            fileResponse = send_file(filePath, as_attachment=True)
-            os.remove(filePath)
-            return fileResponse
-        else:
-            return jsonify({"message": "File not found."}), 404
+        with engine.connect() as connection:
+            # Query to fetch patient data
+            patientDataQuery = text('SELECT * FROM psyche_patientdata WHERE ptid = :ptid')
+            result = connection.execute(patientDataQuery, {'ptid': ptID})
+            rows = result.fetchall()
+            if not rows:
+                return jsonify({"message": "No data found."}), 404
+
+            # Create a CSV in memory
+            output = StringIO()
+            writer = csv.writer(output)
+            writer.writerow(rows[0].keys())  # Column headers
+            for row in rows:
+                writer.writerow(row)
+
+            # Move the cursor to the beginning of the StringIO object
+            output.seek(0)
+
+            # Delete patient data
+            deleteQuery = text('DELETE FROM psyche_patientdata WHERE ptid = :ptid')
+            connection.execute(deleteQuery, {'ptid': ptID})
+            connection.commit()
+
+            # Generate the response
+            response = Response(output.getvalue(), mimetype='text/csv')
+            response.headers['Content-Disposition'] = f'attachment; filename={fileName}.csv'
+            return response
+
     except Exception as e:
-        return jsonify({"message": f"Error exporting data: {str(e)}"}), 500
+        return jsonify({"message": f"Error processing request: {str(e)}"}), 500
 
 @app.route('/login', methods=['POST'])
 def login():
