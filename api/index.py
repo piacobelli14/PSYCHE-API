@@ -358,7 +358,6 @@ def edit_patient():
             }
             
             connection.execute(editPatientQuery, editPatientValues)
-            connection.commit()
             
             return jsonify({}), 200
 
