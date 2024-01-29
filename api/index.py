@@ -41,7 +41,11 @@ folderPath = '/tmp/CurrentPatientCSVs'
 if not os.path.exists(folderPath):
     os.makedirs(folderPath)
     
-@app.route('/stored-data')
+@app.route('/')
+def main_page():
+    return "Peter Iacobelli built this."
+    
+@app.route('/stored-data', methods=['POST'])
 def stored_data():
     deviceBatteries()
     dataString = request.data.decode()
