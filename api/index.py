@@ -81,7 +81,7 @@ def stored_data():
                     connection.execute(dataInsertQuery, dataInsertValue)
                     connection.commit()
                             
-                return jsonify(data), 200
+                return jsonify({"message": data}), 200
             else:
                 return "Invalid devID", 400
     else:
