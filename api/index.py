@@ -69,16 +69,16 @@ def stored_data():
                         'ptid': ptid, 
                         'ptname': ptname, 
                         'timestamp': currentTimestamp, 
-                        'devid': devid, 
-                        'accx': dataArray[1],  
-                        'accy': dataArray[2], 
-                        'accz': dataArray[3], 
-                        'gyrox': dataArray[4], 
-                        'gyroy': dataArray[5], 
-                        'gyroz': dataArray[6], 
-                        'hr': dataArray[7], 
-                        'presence': dataArray[8], 
-                        'battery': dataArray[9]
+                        'devid': dataArray[1], 
+                        'accx': dataArray[2],  
+                        'accy': dataArray[3], 
+                        'accz': dataArray[4], 
+                        'gyrox': dataArray[5], 
+                        'gyroy': dataArray[6], 
+                        'gyroz': dataArray[7], 
+                        'hr': dataArray[8], 
+                        'presence': dataArray[9], 
+                        'battery': dataArray[10]
                     }
                     connection.execute(dataInsertQuery, dataInsertValue)
                             
