@@ -255,7 +255,6 @@ def change_password():
                 'email': email
             }
             connection.execute(updatePasswordQuery, updatePasswordValues)
-            connection.commit()
 
         return jsonify({}), 200
 
