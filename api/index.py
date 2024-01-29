@@ -61,11 +61,12 @@ def stored_data():
                 if (ptid and ptid != 'None') and (ptname and ptname != 'None') and int(data['presence']) != 0:
                     dataInsertQuery = text('''
                         INSERT INTO psyche_patientdata
-                        (ptid, timestamp, devid, accx, accy, accz, gyrox, gyroy, gyroz, hr, presence, battery)
-                        VALUES (:ptid, :timestamp, :devid, :accx, :accy, :accz, :gyrox, :gyroy, :gyroz, :hr, :presence, :battery)
+                        (ptid, ptname,  timestamp, devid, accx, accy, accz, gyrox, gyroy, gyroz, hr, presence, battery)
+                        VALUES (:ptid, :ptname,  :timestamp, :devid, :accx, :accy, :accz, :gyrox, :gyroy, :gyroz, :hr, :presence, :battery)
                     ''')
                     dataInsertValue = {
                         'ptid': ptid, 
+                        'ptname': ptname, 
                         'timestamp': currentTimestamp, 
                         'devid': dataArray[0], 
                         'accx': dataArray[1],  
@@ -79,7 +80,6 @@ def stored_data():
                         'battery': dataArray[9]
                     }
                     connection.execute(dataInsertQuery, dataInsertValue)
-                    connection.commit()
                             
                 return jsonify({"message": data}), 200
             else:
@@ -89,7 +89,6 @@ def stored_data():
     
 @app.route('/get-sessions', methods=['GET'])
 def get_sessions():
-    folderPath = '/tmp/CurrentPatientCSVs'
     
     try:
         files = os.listdir(folderPath)
