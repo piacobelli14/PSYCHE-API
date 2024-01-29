@@ -327,7 +327,6 @@ def enroll_patient():
             }
             
             connection.execute(enrollPatientQuery, enrollPatientValues)
-            connection.commit()
             
             return jsonify({}), 200
 
