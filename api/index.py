@@ -1,4 +1,5 @@
 import os
+from io import StringIO
 import csv
 import pandas as pd
 import time
@@ -91,22 +92,47 @@ def stored_data():
 def get_sessions():
     
     try:
-        files = os.listdir(folderPath)
-        session_details = [] 
-        for file in files:
-            filePath = os.path.join(folderPath, file)
-            size = os.path.getsize(filePath)
-            creationTime = os.path.getctime(filePath)
-            
-            session_details.append({
-                "name": file, 
-                "sizeBytes": size,
-                "creationTime": time.ctime(creationTime), 
-            })
-            
-        return jsonify({"sessions": session_details}), 200  
+        session_details = []  # Initialize the list to hold session details
+        with engine.connect() as connection:
+            # Fetch unique patient IDs and names
+            selectUniqueIDsQuery = text('''
+                SELECT ptid, MIN(ptname) AS ptname
+                FROM psyche_patientdata
+                GROUP BY ptid;
+            ''')
+            unique_patients = connection.execute(selectUniqueIDsQuery).fetchall()
 
-    except Exception as e: 
+            for ptid, ptname in unique_patients:
+                # Fetch data for this patient ID
+                patientDataQuery = text('''
+                    SELECT * FROM psyche_patientdata WHERE ptid = :ptid
+                ''')
+                patient_data = connection.execute(patientDataQuery, {'ptid': ptid}).fetchall()
+
+                # Simulate CSV writing to a string buffer instead of a file
+                output = StringIO()
+                writer = csv.writer(output)
+                # Assuming you know the column headers or retrieve them dynamically
+                writer.writerow([column for column in patient_data[0].keys()])  # Write headers
+                for row in patient_data:
+                    writer.writerow([value for value in row])
+
+                # Calculate the byte size of the CSV string
+                csv_content = output.getvalue()
+                size_bytes = len(csv_content.encode('utf-8'))  # Get size in bytes
+
+                session_details.append({
+                    "ptid": ptid,
+                    "ptname": ptname,
+                    "estimatedSizeBytes": size_bytes,
+                })
+
+                # Don't forget to close the StringIO object after use
+                output.close()
+
+        return jsonify({"sessions": session_details}), 200
+
+    except Exception as e:
         return jsonify({"message": "Error gathering data: " + str(e)}), 500
     
 @app.route('/export-sessions', methods=['POST'])
