@@ -69,7 +69,7 @@ def stored_data():
                         'ptid': ptid, 
                         'ptname': ptname, 
                         'timestamp': currentTimestamp, 
-                        'devid': dataArray[0], 
+                        'devid': devid, 
                         'accx': dataArray[1],  
                         'accy': dataArray[2], 
                         'accz': dataArray[3], 
@@ -136,28 +136,23 @@ def export_sessions():
 
     try:
         with engine.connect() as connection:
-            # Query to fetch patient data
             patientDataQuery = text('SELECT * FROM psyche_patientdata WHERE ptid = :ptid')
-            result = connection.execute(patientDataQuery, {'ptid': ptID})
-            rows = result.fetchall()
+            patientDataResult = connection.execute(patientDataQuery, {'ptid': ptID})
+            rows = patientDataResult.fetchall()
             if not rows:
                 return jsonify({"message": "No data found."}), 404
 
-            # Create a CSV in memory
             output = StringIO()
             writer = csv.writer(output)
-            writer.writerow(rows[0].keys())  # Column headers
+            writer.writerow(rows[0].keys()) 
             for row in rows:
                 writer.writerow(row)
-
-            # Move the cursor to the beginning of the StringIO object
+                
             output.seek(0)
 
-            # Delete patient data
-            deleteQuery = text('DELETE FROM psyche_patientdata WHERE ptid = :ptid')
-            connection.execute(deleteQuery, {'ptid': ptID})
+            patientDeleteQuery = text('DELETE FROM psyche_patientdata WHERE ptid = :ptid')
+            connection.execute(patientDeleteQuery, {'ptid': ptID})
 
-            # Generate the response
             response = Response(output.getvalue(), mimetype='text/csv')
             response.headers['Content-Disposition'] = f'attachment; filename={fileName}.csv'
             return response
