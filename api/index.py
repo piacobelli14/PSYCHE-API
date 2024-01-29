@@ -82,7 +82,7 @@ def stored_data():
             else:
                 return "Invalid devID", 400
     else:
-        return "Invalid devID", 400
+        return "Invalid devID Meta", 400
     
 @app.route('/get-sessions', methods=['GET'])
 def get_sessions():
