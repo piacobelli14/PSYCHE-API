@@ -24,14 +24,6 @@ smtp_config = {
     'user': os.getenv('SMTP_USER'),
     'password': os.getenv('SMTP_PASSWORD')
 }
-
-db_config = {
-    'host': 'localhost',
-    'dbname': 'psyche',
-    'user': 'piacobeli',
-    'password': 'PAiac14-',
-    'port': 5551 
-}
 engine = create_engine(os.getenv('POSTGRES_URL'))
 
 app = Flask(__name__)
