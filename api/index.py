@@ -482,7 +482,6 @@ def add_device():
             return jsonify({}), 200
         
     except Exception as e: 
-        print(str(e))
         return jsonify({"message": "Error processing request:" + str(e)}), 500
     
 @app.route('/remove-device', methods=['POST'])
@@ -516,11 +515,6 @@ def get_assignment_info():
             patientInfoResult = connection.execute(patientInfoQuery, {'ptid': ptID}).fetchone()
             
             if patientInfoResult:
-                print({
-                    "ptName": patientInfoResult[0],
-                    "currentDevID": patientInfoResult[1] if patientInfoResult[1] else "None", 
-                    "currentDevType": patientInfoResult[2] if patientInfoResult[2] else "None"
-                })
                 return jsonify({
                     "ptName": patientInfoResult[0],
                     "currentDevID": patientInfoResult[1] if patientInfoResult[1] else "None", 
@@ -530,7 +524,6 @@ def get_assignment_info():
                 return jsonify({"ptName": "None", "currentDevID": "None", "currentDevType": "None"}), 404
 
     except Exception as e:
-        print(e)
         return jsonify({"message": "Error processing request: " + str(e)}), 500
 
 
@@ -578,29 +571,25 @@ def generateSaltedPassword(password):
 def deviceBatteries(): 
     folderPath = '/tmp/CurrentPatientCSVs'
      
-    try: 
-        for fileName in os.listdir(folderPath): 
-            filePath = os.path.join(folderPath, fileName)
-            if os.path.isfile(filePath): 
-                with open(filePath, newline='') as csvfile: 
-                    reader = csv.DictReader(csvfile)
-                    lastLine = {}
-                    for row in reader:
-                        lastLine = row
-                    
-                    if lastLine:
-                        devID = lastLine.get('devID')
-                        battery = lastLine.get('battery', 'N/A')
-                        if devID and battery != 'N/A':
-                            devIDFormatted = f"ST-{'0' if int(devID) < 10 else ''}{devID}"
-                            updateBatteryQuery = text("""
-                                UPDATE psyche_registereddevices
-                                SET devbattery = :devbattery
-                                WHERE devid = :devid;
-                            """)
-                            with engine.connect() as connection:
-                                connection.execute(updateBatteryQuery, {'devbattery': battery, 'devid': devIDFormatted})
-                                connection.commit()
-    
-    except Exception as e: 
-        print(f"Error getting batteries: {str(e)}")
+    for fileName in os.listdir(folderPath): 
+        filePath = os.path.join(folderPath, fileName)
+        if os.path.isfile(filePath): 
+            with open(filePath, newline='') as csvfile: 
+                reader = csv.DictReader(csvfile)
+                lastLine = {}
+                for row in reader:
+                    lastLine = row
+                
+                if lastLine:
+                    devID = lastLine.get('devID')
+                    battery = lastLine.get('battery', 'N/A')
+                    if devID and battery != 'N/A':
+                        devIDFormatted = f"ST-{'0' if int(devID) < 10 else ''}{devID}"
+                        updateBatteryQuery = text("""
+                            UPDATE psyche_registereddevices
+                            SET devbattery = :devbattery
+                            WHERE devid = :devid;
+                        """)
+                        with engine.connect() as connection:
+                            connection.execute(updateBatteryQuery, {'devbattery': battery, 'devid': devIDFormatted})
+                            connection.commit()
