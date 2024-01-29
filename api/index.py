@@ -125,7 +125,7 @@ def login():
     
     try:
         with engine.connect() as connection:
-            loginQuery = text('SELECT salt, hashedpassword FROM psycheusers WHERE username = :username;')
+            loginQuery = text('SELECT salt, hashedpassword FROM psycheusers WHERE username = :username OR email = :username;')
             loginResult = connection.execute(loginQuery, {'username': username}).fetchone()
 
         if not loginResult:
