@@ -26,11 +26,11 @@ smtp_config = {
 }
 
 db_config = {
-    'host': os.getenv('DB_HOST'),
-    'dbname': os.getenv('DB_NAME'),
-    'user': os.getenv('DB_USER'),
-    'password': os.getenv('DB_PASSWORD'),
-    'port': int(os.getenv('DB_PORT'))  
+    'host': 'localhost',
+    'dbname': 'psyche',
+    'user': 'piacobeli',
+    'password': 'PAiac14-',
+    'port': 5551 
 }
 engine = create_engine(f'postgresql+psycopg2://{db_config["user"]}:{db_config["password"]}@{db_config["host"]}:{db_config["port"]}/{db_config["dbname"]}')
 
