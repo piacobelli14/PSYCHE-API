@@ -383,7 +383,6 @@ def archive_patient():
                 WHERE ptid = :ptid
             """)
             connection.execute(deleteUserQuery, {'ptid': ptID})
-            connection.commit()
 
             return jsonify({}), 200
 
