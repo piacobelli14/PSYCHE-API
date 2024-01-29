@@ -39,36 +39,33 @@ def main_page():
     
 @app.route('/stored-data', methods=['POST'])
 def stored_data():
+    # Assuming deviceBatteries() is correctly implemented elsewhere
     deviceBatteries()
-    dataString = request.data.decode()
+    dataString = request.data.decode()  # Consider using request.json for JSON data
     dataArray = dataString.split(',')
     
-    fields = ['timestamp', 'devID', 'accX', 'accY', 'accZ', 'gyroX', 'gyroY', 'gyroZ', 'hr', 'presence', 'battery']
-    
-    currentTimestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-    
-    dataArray.insert(0, currentTimestamp)
-    data = {field: dataArray[index] if index < len(dataArray) else '0' for index, field in enumerate(fields)}
-
-    if 'devID' in data and data['devID'].isdigit():
-        devid = f"ST-{'0' if int(data['devID']) < 10 else ''}{data['devID']}"
-        assignmentQuery = text("SELECT devassigned, devassignedname FROM psyche_registereddevices WHERE devid = :devid")
-        with engine.connect() as connection:
-            assignmentResult = connection.execute(assignmentQuery, {'devid': devid})
-            row = assignmentResult.fetchone()
-            if row:
-                ptid, ptname = row
-                if (ptid and ptid != 'None') and (ptname and ptname != 'None') and int(data['presence']) != 0:
-                    with engine.connect() as connection: 
+    if len(dataArray) >= 10:  # Ensure dataArray has enough elements
+        currentTimestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        devID = dataArray[0]
+        
+        if devID.isdigit():
+            devid = f"ST-{'0' if int(devID) < 10 else ''}{devID}"
+            with engine.connect() as connection:
+                assignmentQuery = text("SELECT devassigned, devassignedname FROM psyche_registereddevices WHERE devid = :devid")
+                assignmentResult = connection.execute(assignmentQuery, {'devid': devid}).fetchone()
+                
+                if assignmentResult:
+                    ptid, ptname = assignmentResult
+                    if ptid and ptid != 'None' and int(dataArray[8]) != 0:  # Assuming dataArray[8] is 'presence'
                         dataInsertQuery = text('''
                             INSERT INTO psyche_patientdata
                             (ptid, timestamp, devid, accx, accy, accz, gyrox, gyroy, gyroz, hr, presence, battery)
                             VALUES (:ptid, :timestamp, :devid, :accx, :accy, :accz, :gyrox, :gyroy, :gyroz, :hr, :presence, :battery)
                         ''')
                         dataInsertValue = {
-                            'ptid': ptid, 
-                            'timestamp': currentTimestamp, 
-                            'devid': dataArray[0], 
+                            'ptid': ptid,
+                            'timestamp': currentTimestamp,
+                            'devid': devid,
                             'accx': dataArray[1],  
                             'accy': dataArray[2], 
                             'accz': dataArray[3], 
@@ -80,12 +77,16 @@ def stored_data():
                             'battery': dataArray[9]
                         }
                         connection.execute(dataInsertQuery, dataInsertValue)
-                            
-                return jsonify(data), 200
-            else:
-                return "Invalid devID", 400
+                        
+                        return jsonify({"message": "Data stored successfully"}), 200
+                    else:
+                        return jsonify({"message": "Invalid ptid or ptname"}), 400
+                else:
+                    return jsonify({"message": "Invalid devID"}), 400
+        else:
+            return jsonify({"message": "devID is not a digit"}), 400
     else:
-        return f"Invalid devID", 400
+        return jsonify({"message": "Incomplete data received"}), 400
     
 @app.route('/get-sessions', methods=['GET'])
 def get_sessions():
