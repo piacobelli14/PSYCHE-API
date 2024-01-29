@@ -122,9 +122,8 @@ def get_sessions():
                 size_bytes = len(csv_content.encode('utf-8'))  # Get size in bytes
 
                 session_details.append({
-                    "ptid": ptid,
-                    "ptname": ptname,
-                    "estimatedSizeBytes": size_bytes,
+                    "name": f'{ptname}-{ptid}_RTData',
+                    "sizeBytes": size_bytes,
                 })
 
                 # Don't forget to close the StringIO object after use
