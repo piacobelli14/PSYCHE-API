@@ -43,7 +43,7 @@ if not os.path.exists(folderPath):
     
 @app.route('/')
 def main_page():
-    return "Peter Iacobelli built this."
+    return "Peter Iacobelli built this. :)"
     
 @app.route('/stored-data', methods=['POST'])
 def stored_data():
@@ -82,7 +82,7 @@ def stored_data():
             else:
                 return "Invalid devID", 400
     else:
-        return "Invalid devID Meta", 400
+        return f"Invalid devID Meta {dataArray}", 400
     
 @app.route('/get-sessions', methods=['GET'])
 def get_sessions():
