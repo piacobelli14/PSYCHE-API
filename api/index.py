@@ -592,4 +592,3 @@ def deviceBatteries():
                         """)
                         with engine.connect() as connection:
                             connection.execute(updateBatteryQuery, {'devbattery': battery, 'devid': devIDFormatted})
-                            connection.commit()
