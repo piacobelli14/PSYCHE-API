@@ -478,7 +478,6 @@ def add_device():
             }
             
             connection.execute(deviceEntryQuery, deviceEntryValues)
-            connection.commit()
             
             return jsonify({}), 200
         
@@ -495,7 +494,6 @@ def remove_device():
         with engine.connect() as connection: 
             deviceRemovalQuery = text("DELETE FROM psyche_registereddevices WHERE devid = :devid")
             connection.execute(deviceRemovalQuery, {'devid': devID})
-            connection.commit()
             
             return jsonify({}), 200
     
