@@ -209,7 +209,7 @@ def reset_password():
                 "INSERT INTO psyche_resettokens (username, resettoken, expirationtimestamp) VALUES (:username, :resettoken, :expirationtimestamp);"
             )
             connection.execute(insertResetToken, {'username': username, 'resettoken': resetCode, 'expirationtimestamp': expiration_timestamp})
-            connection.commit()
+            
         try:
             server = smtplib.SMTP(smtp_config['host'], smtp_config['port'])
             server.starttls()
