@@ -549,7 +549,7 @@ def swap_device():
         with engine.connect() as connection: 
             if oldDevID != 'None': 
                 deviceDeleteQuery = text("UPDATE psyche_registereddevices SET devassigned = 'None', devassignedname = 'None' WHERE devid = :devid")
-                connection.execute(deviceDeleteQuery, {'devid', oldDevID})
+                connection.execute(deviceDeleteQuery, {'devid': oldDevID})
             deviceAssignQuery = text("UPDATE psyche_registereddevices SET devassigned = :devassigned, devassignedname = :devassignedname, lastassignment = :lastassignment WHERE devid = :devid")
             deviceAssignValues = {
                 'devassigned': ptID, 
@@ -562,7 +562,6 @@ def swap_device():
             return jsonify({}), 200
             
     except Exception as e: 
-        print(str(e))
         return jsonify({"mesage": "Error processing request:" + str(e)}), 500
     
 def hashPassword(entered_password, storedSalt):
