@@ -74,7 +74,7 @@ def stored_data():
             else:
                 return "Invalid devID", 400
     else:
-        return f"Invalid devID Meta {dataArray}", 400
+        return f"Invalid devID", 400
     
 @app.route('/get-sessions', methods=['GET'])
 def get_sessions():
