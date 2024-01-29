@@ -156,7 +156,6 @@ def export_sessions():
             # Delete patient data
             deleteQuery = text('DELETE FROM psyche_patientdata WHERE ptid = :ptid')
             connection.execute(deleteQuery, {'ptid': ptID})
-            connection.commit()
 
             # Generate the response
             response = Response(output.getvalue(), mimetype='text/csv')
