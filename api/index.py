@@ -30,10 +30,6 @@ engine = create_engine(os.getenv('POSTGRES_URL'))
 app = Flask(__name__)
 CORS(app)
 
-folderPath = '/tmp/CurrentPatientCSVs'
-if not os.path.exists(folderPath):
-    os.makedirs(folderPath)
-    
 @app.route('/')
 def main_page():
     return "Peter Iacobelli built this. :)"
@@ -611,27 +607,25 @@ def generateSaltedPassword(password):
     hashedPassword = hashlib.sha256(saltedPassword.encode()).hexdigest()
     return salt, hashedPassword
         
-def deviceBatteries(): 
-    folderPath = '/tmp/CurrentPatientCSVs'
-     
-    for fileName in os.listdir(folderPath): 
-        filePath = os.path.join(folderPath, fileName)
-        if os.path.isfile(filePath): 
-            with open(filePath, newline='') as csvfile: 
-                reader = csv.DictReader(csvfile)
-                lastLine = {}
-                for row in reader:
-                    lastLine = row
-                
-                if lastLine:
-                    devID = lastLine.get('devID')
-                    battery = lastLine.get('battery', 'N/A')
-                    if devID and battery != 'N/A':
-                        devIDFormatted = f"ST-{'0' if int(devID) < 10 else ''}{devID}"
-                        updateBatteryQuery = text("""
-                            UPDATE psyche_registereddevices
-                            SET devbattery = :devbattery
-                            WHERE devid = :devid;
-                        """)
-                        with engine.connect() as connection:
-                            connection.execute(updateBatteryQuery, {'devbattery': battery, 'devid': devIDFormatted})
+def deviceBatteries():
+    fetchBatteryLevelsQuery = text("""
+        SELECT devID, battery
+        FROM (
+            SELECT devID, battery,
+                   ROW_NUMBER() OVER(PARTITION BY devID ORDER BY timestamp DESC) AS rn
+            FROM psyche_patientdata
+        ) ranked
+        WHERE rn = 1
+    """)
+
+    with engine.connect() as connection:
+        recentBatteryLevels = connection.execute(fetchBatteryLevelsQuery).fetchall()
+        for devID, battery in recentBatteryLevels:
+            if devID and battery is not None:
+                devIDFormatted = f"ST-{'0' if int(devID) < 10 else ''}{devID}"
+                updateBatteryQuery = text("""
+                    UPDATE psyche_registereddevices
+                    SET devbattery = :devbattery
+                    WHERE devid = :devid;
+                """)
+                connection.execute(updateBatteryQuery, {'devbattery': battery, 'devid': devIDFormatted})
