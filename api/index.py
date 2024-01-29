@@ -79,6 +79,7 @@ def stored_data():
                         'battery': dataArray[9]
                     }
                     connection.execute(dataInsertQuery, dataInsertValue)
+                    connection.commit()
                             
                 return jsonify(data), 200
             else:
