@@ -58,18 +58,29 @@ def stored_data():
             row = assignmentResult.fetchone()
             if row:
                 ptid, ptname = row
-                if (ptid and ptid != 'None') and (ptname and ptname != 'None'):
-                    filePath = os.path.join(folderPath, f"{ptid}-{ptname.replace(' ', '')}_RTData.csv")
-
-                    file_exists = os.path.exists(filePath)
-                    with open(filePath, 'a', newline='') as file:
-                        writer = csv.writer(file)
-                        if not file_exists:
-                            writer.writerow(fields)
+                if (ptid and ptid != 'None') and (ptname and ptname != 'None') and int(data['presence']) != 0:
+                    with engine.connect() as connection: 
+                        dataInsertQuery = text('''
+                            INSERT INTO psyche_patientdata
+                            (ptid, timestamp, devid, accx, accy, accz, gyrox, gyroy, gyroz, hr, presence, battery)
+                            VALUES (:ptid, :timestamp, :devid, :accx, :accy, :accz, :gyrox, :gyroy, :gyroz, :hr, :presence, :battery)
+                        ''')
+                        dataInsertValue = {
+                            'ptid': ptid, 
+                            'timestamp': currentTimestamp, 
+                            'devid': dataArray[0], 
+                            'accx': dataArray[1],  
+                            'accy': dataArray[2], 
+                            'accz': dataArray[3], 
+                            'gyrox': dataArray[4], 
+                            'gyroy': dataArray[5], 
+                            'gyroz': dataArray[6], 
+                            'hr': dataArray[7], 
+                            'presence': dataArray[8], 
+                            'battery': dataArray[9]
+                        }
+                        connection.execute(dataInsertQuery, dataInsertValue)
                             
-                        if int(data['presence']) != 0:
-                            writer.writerow([data[field] for field in fields])
-                    
                 return jsonify(data), 200
             else:
                 return "Invalid devID", 400
