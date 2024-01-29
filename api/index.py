@@ -428,7 +428,6 @@ def get_device_info():
         with engine.connect() as connection: 
             deviceInformationQuery = text('SELECT * FROM psyche_registereddevices;')
             deviceInformationResult = connection.execute(deviceInformationQuery).fetchall()
-            connection.commit()
 
             deviceInfoList = [
                 {
@@ -559,7 +558,6 @@ def swap_device():
                 'devid': newDevID,
             }
             connection.execute(deviceAssignQuery, deviceAssignValues)
-            connection.commit()
             
             return jsonify({}), 200
             
