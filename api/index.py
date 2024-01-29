@@ -119,7 +119,7 @@ def get_sessions():
 
                 # Calculate the byte size of the CSV string
                 csv_content = output.getvalue()
-                size_bytes = len(csv_content.encode('utf-8'))  # Get size in bytes
+                size_bytes = int(len(csv_content.encode('utf-8')))  # Get size in bytes
 
                 session_details.append({
                     "name": f'{ptname}-{ptid}_RTData',
