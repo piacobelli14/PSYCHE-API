@@ -62,5 +62,3 @@ class handler(BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
         self.wfile.write(response["body"].encode())
-
-# Note: Vercel automatically looks for a `handler` object in the module.
