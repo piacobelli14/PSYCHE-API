@@ -37,7 +37,7 @@ engine = create_engine(f'postgresql+psycopg2://{db_config["user"]}:{db_config["p
 app = Flask(__name__)
 CORS(app)
 
-folderPath = 'CurrentPatientCSVs'
+folderPath = 'tmp/CurrentPatientCSVs'
 if not os.path.exists(folderPath):
     os.makedirs(folderPath)
     
@@ -82,7 +82,7 @@ def stored_data():
     
 @app.route('/get-sessions', methods=['GET'])
 def get_sessions():
-    folderPath = 'CurrentPatientCSVs'
+    folderPath = 'tmp/CurrentPatientCSVs'
     
     try:
         files = os.listdir(folderPath)
@@ -108,7 +108,7 @@ def export_sessions():
     data = request.json
     fileName = data.get('fileName')
     
-    folderPath = 'CurrentPatientCSVs'
+    folderPath = 'tmp/CurrentPatientCSVs'
     
     try:
         filePath = os.path.join(folderPath, fileName)
@@ -589,7 +589,7 @@ def generateSaltedPassword(password):
     return salt, hashedPassword
         
 def deviceBatteries(): 
-    folderPath = 'CurrentPatientCSVs'
+    folderPath = 'tmp/CurrentPatientCSVs'
      
     try: 
         for fileName in os.listdir(folderPath): 
